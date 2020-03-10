@@ -1,0 +1,9 @@
+grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
+
+generate expression "http://www.xtext.org/expression/Expression"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!';
