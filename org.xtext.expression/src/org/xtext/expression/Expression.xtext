@@ -2,8 +2,30 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 
 generate expression "http://www.xtext.org/expression/Expression"
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!';
+Expression:
+	PlusMinus
+;
+
+PlusMinus returns Expression:
+	MultDiv ({PlusMinus.left=current} operator=PlusMinusOp right=MultDiv)*
+;
+
+MultDiv returns Expression:
+	Atomic ({MultDiv.left=current} operator=MultDivOp right=Atomic)*
+;
+
+Atomic returns Expression:
+	'(' Expression ')' | Lit
+;
+
+Lit:
+	value=INT
+;
+
+PlusMinusOp:
+	'+' | '-'
+;
+
+MultDivOp:
+	'*' | '/'
+;

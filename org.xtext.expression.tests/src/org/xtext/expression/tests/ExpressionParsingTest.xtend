@@ -10,21 +10,102 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.xtext.expression.expression.Model
+import org.xtext.expression.expression.Expression
 
 @ExtendWith(InjectionExtension)
 @InjectWith(ExpressionInjectorProvider)
 class ExpressionParsingTest {
+
 	@Inject
-	ParseHelper<Model> parseHelper
-	
-	@Test
-	def void loadModel() {
-		val result = parseHelper.parse('''
-			Hello Xtext!
-		''')
+	extension ParseHelper<Expression> parseHelper
+
+	private def void assertLegal(CharSequence program) {
+		val result = program.parse
 		Assertions.assertNotNull(result)
+		
 		val errors = result.eResource.errors
 		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+	}
+
+	private def void assertIllegal(CharSequence program) {
+		val result = program.parse
+		Assertions.assertFalse(result !== null && result.eResource.errors.isEmpty, "Expected errors but found none")
+	}
+
+	@Test
+	def void parse_empty() {
+		'''
+		
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_rightMissing() {
+		'''
+		5+
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_leftMissing() {
+		'''
+		+8
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_touchingParentheses() {
+		'''
+		(5*9)(2+7)
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_rightParenthesisMissing() {
+		'''
+		(5*9
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_leftParenthesisMissing() {
+		'''
+		5*9)
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_emptyParentheses() {		
+		'''
+		()
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_illegalParenthesis() {		
+		'''
+		(2+3*9/)
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_onlyLit() {		
+		'''
+		4
+		'''.assertLegal
+	}
+	
+	@Test
+	def void parse_onlyParenthesis() {		
+		'''
+		(5)
+		'''.assertLegal
+	}
+	
+		@Test
+	def void parse_correct() {		
+		'''
+		2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
+		'''.assertLegal
 	}
 }
