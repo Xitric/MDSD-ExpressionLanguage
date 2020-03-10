@@ -8,5 +8,22 @@ Bundle-SymbolicName: org.xtext.expression; singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
- org.eclipse.equinox.common;bundle-version="3.5.0"
+ org.eclipse.equinox.common;bundle-version="3.5.0",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.14.0",
+ org.eclipse.xtext.util,
+ org.eclipse.emf.common,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: org.xtext.expression.expression.impl,
+ org.xtext.expression.expression.util,
+ org.xtext.expression.expression,
+ org.xtext.expression.generator,
+ org.xtext.expression,
+ org.xtext.expression.validation,
+ org.xtext.expression.services,
+ org.xtext.expression.parser.antlr.internal,
+ org.xtext.expression.parser.antlr,
+ org.xtext.expression.serializer,
+ org.xtext.expression.scoping
+Import-Package: org.apache.log4j

@@ -12,6 +12,13 @@ Require-Bundle: org.xtext.expression,
  org.eclipse.xtext.ui.shared,
  org.eclipse.xtext.ui.codetemplates.ui,
  org.eclipse.ui.editors;bundle-version="3.5.0",
- org.eclipse.ui.ide;bundle-version="3.5.0"
+ org.eclipse.ui.ide;bundle-version="3.5.0",
+ org.eclipse.ui,
+ org.eclipse.compare,
+ org.eclipse.xtext.builder
 Import-Package: org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: org.xtext.expression.ui.quickfix,
+ org.xtext.expression.ui.contentassist,
+ org.xtext.expression.ui.internal
+Bundle-Activator: org.xtext.expression.ui.internal.ExpressionActivator
