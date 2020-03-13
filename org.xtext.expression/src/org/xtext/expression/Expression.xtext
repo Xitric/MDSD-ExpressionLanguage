@@ -3,46 +3,45 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 generate expression "http://www.xtext.org/expression/Expression"
 
 //TODO: Add power ** with right-associativity and highest precedence
+//TODO: Add floating point support for numbers!!!!
 
 MathExpression:
 	definitions += Definition*
 	'result' 'is' expression=Expression
 ;
 
-Definition:
-	'def' variable=Variable 'with'
+// A definition is basically just a variable with a bit extra syntax
+Definition returns Variable:
+	'def' Variable 'with'
 ;
 
 Variable:
 	name=ID '=' expression=Expression
 ;
 
+// This rule is simply here to make the grammar easier to read and understand
 Expression:
 	AddSub
 ;
 
-// We do not actually want the AddSub and MultDiv types generated, but simply
-// use them as grammar rules
+// AddSub and MultDiv are only used as rules to ensure precedence, but they are
+// both represented as the common Binary type in the meta model
 AddSub returns Expression:
-	MultDiv ({Expression.left=current} operator=AddSubOp right=MultDiv)*
+	MultDiv ({Binary.left=current} operator=AddSubOp right=MultDiv)*
 ;
 
 MultDiv returns Expression:
-	Functional ({Expression.left=current} operator=MultDivOp right=Functional)*
+	Functional ({Binary.left=current} operator=MultDivOp right=Functional)*
 ;
 
+// By explicitly instantiating the Functional type, we ensure that 'variable'
+// and 'expression' are not placed in the Expression type of the meta model
 Functional returns Expression:
-	'let' variable=Variable 'in' expression=Expression 'end' | Primary
+	{Functional} 'let' variable=Variable 'in' expression=Expression 'end' | Primary
 ;
 
-// We define a common super type for operators to make the generated meta model
-// clearer. Otherwise the common operator just becomes an EObject. Also, there
-// is no need to generate classes for AddSubOp and MultDivOp, because we only
-// use then as grammar rules
-Operator:
-	AddSubOp | MultDivOp
-;
-
+// We only use these two rules to group operators, but they are not actually
+// part of our meta model. The common Operator type is used in the Binary type
 AddSubOp returns Operator:
 	{Plus} '+' | {Minus} '-'
 ;
@@ -51,12 +50,13 @@ MultDivOp returns Operator:
 	{Mult} '*' | {Div} '/'
 ;
 
-// Type Primary is never generated but makes Number and Parenthesis as sub
-// types of Expression
 Primary returns Expression:
 	Parenthesis | Reference | Number
 ;
 
+// This type is necessary because otherwise we do not know where to print
+// parentheses when displaying expressions. If all we needed was to compute the
+// value, I would add 'returns Expression' here
 Parenthesis:
 	'(' expression=Expression ')'
 ;
