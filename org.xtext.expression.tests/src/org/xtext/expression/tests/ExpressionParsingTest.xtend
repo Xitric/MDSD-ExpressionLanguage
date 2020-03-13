@@ -10,15 +10,15 @@ import org.eclipse.xtext.testing.util.ParseHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
-import org.xtext.expression.expression.Expression
+import org.xtext.expression.expression.MathExpression
 
 @ExtendWith(InjectionExtension)
 @InjectWith(ExpressionInjectorProvider)
 class ExpressionParsingTest {
 
 	@Inject
-	extension ParseHelper<Expression> parseHelper
-
+	extension ParseHelper<MathExpression> parseHelper
+	
 	private def void assertLegal(CharSequence program) {
 		val result = program.parse
 		Assertions.assertNotNull(result)
@@ -40,72 +40,87 @@ class ExpressionParsingTest {
 	}
 	
 	@Test
+	def void parse_incompleteKeywords() {
+		'''
+		result
+		'''.assertIllegal
+		
+		'''
+		is
+		'''.assertIllegal
+		
+		'''
+		result is
+		'''.assertIllegal
+	}
+	
+	@Test
 	def void parse_rightMissing() {
 		'''
-		5+
+		result is 5+
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_leftMissing() {
 		'''
-		+8
+		result is +8
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_touchingParentheses() {
 		'''
-		(5*9)(2+7)
+		result is (5*9)(2+7)
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_rightParenthesisMissing() {
 		'''
-		(5*9
+		result is (5*9
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_leftParenthesisMissing() {
 		'''
-		5*9)
+		result is 5*9)
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_emptyParentheses() {		
 		'''
-		()
+		result is ()
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_illegalParenthesis() {		
 		'''
-		(2+3*9/)
+		result is (2+3*9/)
 		'''.assertIllegal
 	}
 	
 	@Test
 	def void parse_onlyLit() {		
 		'''
-		4
+		result is 4
 		'''.assertLegal
 	}
 	
 	@Test
 	def void parse_onlyParenthesis() {		
 		'''
-		(5)
+		result is (5)
 		'''.assertLegal
 	}
 	
-		@Test
+	@Test
 	def void parse_correct() {		
 		'''
-		2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
+		result is 2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
 		'''.assertLegal
 	}
 }

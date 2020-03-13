@@ -25,6 +25,5 @@ Export-Package: org.xtext.expression.expression.impl,
  org.xtext.expression.parser.antlr.internal,
  org.xtext.expression.parser.antlr,
  org.xtext.expression.serializer,
- org.xtext.expression.scoping,
- org.xtext.expression.evaluation
+ org.xtext.expression.scoping
 Import-Package: org.apache.log4j

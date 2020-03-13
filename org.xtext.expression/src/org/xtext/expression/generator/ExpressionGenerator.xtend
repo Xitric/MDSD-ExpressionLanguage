@@ -3,10 +3,19 @@
  */
 package org.xtext.expression.generator
 
+import javax.swing.JOptionPane
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.xtext.expression.expression.Div
+import org.xtext.expression.expression.Expression
+import org.xtext.expression.expression.MathExpression
+import org.xtext.expression.expression.Minus
+import org.xtext.expression.expression.Mult
+import org.xtext.expression.expression.Number
+import org.xtext.expression.expression.Parenthesis
+import org.xtext.expression.expression.Plus
 
 /**
  * Generates code from your model files on save.
@@ -16,10 +25,50 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class ExpressionGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
-//			resource.allContents
-//				.filter(Greeting)
-//				.map[name]
-//				.join(', '))
+		val math = resource.allContents.filter(MathExpression).next
+		val result = math.compute
+		System.out.println('''Math expression = «math.display»''')
+		// For +1 score, replace with hovering, see Bettini Chapter 8
+		JOptionPane.showMessageDialog(null, '''result = «result»''', "Math Language", JOptionPane.INFORMATION_MESSAGE)
 	}
+	
+	//
+	// Compute
+	//
+	def int compute(MathExpression math) {
+		math.expression.computeExp
+	}
+	
+	def dispatch int computeExp(Expression exp) {
+		val left = exp.left.computeExp
+		switch exp.operator {
+			Plus: left + exp.right.computeExp
+			Minus: left - exp.right.computeExp
+			Mult: left * exp.right.computeExp
+			Div: left / exp.right.computeExp
+			default: left
+		}
+	}
+	
+	def dispatch int computeExp(Parenthesis paren) {
+		paren.expression.computeExp
+	}
+	
+	def dispatch int computeExp(Number num) {
+		num.value
+	}
+	
+	//
+	// Display
+	//
+	def CharSequence display(MathExpression math) '''Math[«math.expression.displayExp»]'''
+	
+	def dispatch CharSequence displayExp(Expression exp) '''Exp[«exp.left.displayExp»,«exp.operator?.displayOp»,«exp.right?.displayExp»]'''
+	def dispatch CharSequence displayExp(Parenthesis paren) '''(«paren.expression.displayExp»)'''
+	def dispatch CharSequence displayExp(Number num) '''«num.value»'''
+	
+	def dispatch CharSequence displayOp(Plus op) '''+'''
+	def dispatch CharSequence displayOp(Minus op) '''-'''
+	def dispatch CharSequence displayOp(Mult op) '''*'''
+	def dispatch CharSequence displayOp(Div op) '''/'''
 }
