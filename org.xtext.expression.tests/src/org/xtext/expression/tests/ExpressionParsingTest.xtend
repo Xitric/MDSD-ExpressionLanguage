@@ -16,8 +16,7 @@ import org.xtext.expression.expression.MathExpression
 @InjectWith(ExpressionInjectorProvider)
 class ExpressionParsingTest {
 
-	@Inject
-	extension ParseHelper<MathExpression> parseHelper
+	@Inject extension ParseHelper<MathExpression>
 	
 	private def void assertLegal(CharSequence program) {
 		val result = program.parse

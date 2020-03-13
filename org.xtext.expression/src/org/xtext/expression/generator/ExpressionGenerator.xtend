@@ -3,7 +3,6 @@
  */
 package org.xtext.expression.generator
 
-import javax.swing.JOptionPane
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -26,10 +25,7 @@ class ExpressionGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val math = resource.allContents.filter(MathExpression).next
-		val result = math.compute
-		System.out.println('''Math expression = «math.display»''')
-		// For +1 score, replace with hovering, see Bettini Chapter 8
-		JOptionPane.showMessageDialog(null, '''result = «result»''', "Math Language", JOptionPane.INFORMATION_MESSAGE)
+		System.out.println('''«math.display»=«math.compute»''')
 	}
 	
 	//

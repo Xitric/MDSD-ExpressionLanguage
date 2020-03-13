@@ -14,10 +14,8 @@ import org.xtext.expression.generator.ExpressionGenerator
 @InjectWith(ExpressionInjectorProvider)
 class ExpressionEvaluationTest {
 	
-	@Inject
-	extension ParseHelper<MathExpression> parseHelper
-	@Inject
-	extension ExpressionGenerator generator
+	@Inject extension ParseHelper<MathExpression>
+	@Inject extension ExpressionGenerator
 	
 	private def void assertValue(CharSequence program, int value) {
 		Assertions.assertEquals(program.parse.compute, value)
