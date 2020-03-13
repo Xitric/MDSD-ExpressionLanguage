@@ -7,13 +7,37 @@ MathExpression:
 ;
 
 Expression:
-	Primary ({Expression.left=current} operator=Operator right=Primary)*
+	AddSub
 ;
 
+// We do not actually want the AddSub and MultDiv types generated, but simply
+// use them as grammar rules
+AddSub returns Expression:
+	MultDiv ({Expression.left=current} operator=AddSubOp right=MultDiv)*
+;
+
+MultDiv returns Expression:
+	Primary ({Expression.left=current} operator=MultDivOp right=Primary)*
+;
+
+// We define a common super type for operators to make the generated meta model
+// clearer. Otherwise the common operator just becomes an EObject. Also, there
+// is no need to generate classes for AddSubOp and MultDivOp, because we only
+// use then as grammar rules
 Operator:
-	{Plus} '+' | {Minus} '-' | {Mult} '*' | {Div} '/'
+	AddSubOp | MultDivOp
 ;
 
+AddSubOp returns Operator:
+	{Plus} '+' | {Minus} '-'
+;
+
+MultDivOp returns Operator:
+	{Mult} '*' | {Div} '/'
+;
+
+// Type Primary is never generated but makes Number and Parenthesis as sub
+// types of Expression 
 Primary returns Expression:
 	Number | Parenthesis
 ;
