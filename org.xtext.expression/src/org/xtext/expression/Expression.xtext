@@ -62,7 +62,7 @@ Parenthesis:
 ;
 
 Reference:
-	name=[Variable]
+	variable=[Variable]
 ;
 
 Number:

@@ -140,6 +140,12 @@ class ExpressionEvaluationTest {
 		'''
 		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
 		'''.assertValue(29)
+		
+		'''
+		def x = 8 with
+		def y = (x * 6) / 5 - 3 + let z = x * 3 in z + 2 end with
+		result is y * x
+		'''.assertValue(256)
 	}
 	
 	@Test
