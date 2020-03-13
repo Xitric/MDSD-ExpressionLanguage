@@ -231,6 +231,20 @@ class ExpressionParsingTest {
 	}
 	
 	@Test
+	def void parse_correctLetExpression() {
+		'''
+		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
+		'''.assertLegal
+	}
+	
+	@Test
+	def void parse_unclosedLetExpression() {
+		'''
+		result is 9 * let x = 2 in x + 4 / let x = 1 in x end
+		'''.assertIllegal
+	}
+	
+	@Test
 	def void parse_correctMathExpression() {
 		'''
 		def x = 3 with
@@ -239,6 +253,7 @@ class ExpressionParsingTest {
 			let x = (2 + 1) * x - (1 - 1) in
 			let x = x + y in
 				(x - 2) * 2
+		end
 		end
 		'''.assertLegal
 	}

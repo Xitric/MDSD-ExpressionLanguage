@@ -136,6 +136,13 @@ class ExpressionEvaluationTest {
 	}
 	
 	@Test
+	def void parse_correctLetExpression() {
+		'''
+		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
+		'''.assertValue(29)
+	}
+	
+	@Test
 	def void evaluate_complexFunctionalExpression() {
 		'''
 		def x = 3 with
@@ -144,6 +151,7 @@ class ExpressionEvaluationTest {
 			let x = (2 + 1) * x - (1 - 1) in
 			let x = x + y in
 				(x - 2) * 2
+		end
 		end
 		'''.assertValue(26)
 	}

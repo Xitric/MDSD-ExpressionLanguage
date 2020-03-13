@@ -2,8 +2,19 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 
 generate expression "http://www.xtext.org/expression/Expression"
 
+//TODO: Add power ** with right-associativity and highest precedence
+
 MathExpression:
+	definitions += Definition*
 	'result' 'is' expression=Expression
+;
+
+Definition:
+	'def' variable=Variable 'with'
+;
+
+Variable:
+	name=ID '=' expression=Expression
 ;
 
 Expression:
@@ -17,7 +28,11 @@ AddSub returns Expression:
 ;
 
 MultDiv returns Expression:
-	Primary ({Expression.left=current} operator=MultDivOp right=Primary)*
+	Functional ({Expression.left=current} operator=MultDivOp right=Functional)*
+;
+
+Functional returns Expression:
+	'let' variable=Variable 'in' expression=Expression 'end' | Primary
 ;
 
 // We define a common super type for operators to make the generated meta model
@@ -37,13 +52,17 @@ MultDivOp returns Operator:
 ;
 
 // Type Primary is never generated but makes Number and Parenthesis as sub
-// types of Expression 
+// types of Expression
 Primary returns Expression:
-	Number | Parenthesis
+	Parenthesis | Reference | Number
 ;
 
 Parenthesis:
 	'(' expression=Expression ')'
+;
+
+Reference:
+	name=[Variable]
 ;
 
 Number:
