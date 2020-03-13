@@ -39,7 +39,7 @@ class ExpressionParsingTest {
 	}
 	
 	@Test
-	def void parse_incompleteKeywords() {
+	def void parse_incompleteResult() {
 		'''
 		result
 		'''.assertIllegal
@@ -51,75 +51,195 @@ class ExpressionParsingTest {
 		'''
 		result is
 		'''.assertIllegal
-	}
-	
-	@Test
-	def void parse_rightMissing() {
+		
 		'''
-		result is 5+
+		def result is
+		'''.assertIllegal
+		
+		'''
+		def with result is
 		'''.assertIllegal
 	}
 	
 	@Test
-	def void parse_leftMissing() {
+	def void parse_danglingOperator() {
+		'''
+		result is 5+
+		'''.assertIllegal
+		
 		'''
 		result is +8
 		'''.assertIllegal
 	}
 	
 	@Test
-	def void parse_touchingParentheses() {
+	def void parse_illegalParenthesis() {
+		'''
+		result is (5*9
+		'''.assertIllegal
+		
+		'''
+		result is 5*9)
+		'''.assertIllegal
+		
+		'''
+		result is ()
+		'''.assertIllegal
+		
+		'''
+		result is (2+3*9/)
+		'''.assertIllegal
+		
 		'''
 		result is (5*9)(2+7)
 		'''.assertIllegal
 	}
 	
 	@Test
-	def void parse_rightParenthesisMissing() {
-		'''
-		result is (5*9
-		'''.assertIllegal
-	}
-	
-	@Test
-	def void parse_leftParenthesisMissing() {
-		'''
-		result is 5*9)
-		'''.assertIllegal
-	}
-	
-	@Test
-	def void parse_emptyParentheses() {		
-		'''
-		result is ()
-		'''.assertIllegal
-	}
-	
-	@Test
-	def void parse_illegalParenthesis() {		
-		'''
-		result is (2+3*9/)
-		'''.assertIllegal
-	}
-	
-	@Test
-	def void parse_onlyLit() {		
+	def void parse_onlyLit() {
 		'''
 		result is 4
 		'''.assertLegal
 	}
 	
 	@Test
-	def void parse_onlyParenthesis() {		
+	def void parse_onlyParenthesis() {
 		'''
 		result is (5)
 		'''.assertLegal
 	}
 	
 	@Test
-	def void parse_correct() {		
+	def void parse_correctResult() {
 		'''
 		result is 2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
+		'''.assertLegal
+	}
+	
+	@Test
+	def void parse_incompleteDef() {
+		'''
+		def
+		result is 5
+		'''.assertIllegal
+		
+		'''
+		with
+		result is 5
+		'''.assertIllegal
+		
+		'''
+		def with
+		result is 5
+		'''.assertIllegal
+		
+		'''
+		def x with
+		result is 5
+		'''.assertIllegal
+		
+		'''
+		def x = with
+		result is 5
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_forwardReference() {
+		'''
+		def x = y with
+		def y = 1 with
+		result is 5
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_duplicateIdentifiers() {
+		'''
+		def x = 2 with
+		def x = 3 with
+		result is 5
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_missingIdentifier() {
+		'''
+		def x = y with
+		result is x
+		'''.assertIllegal
+		
+		'''
+		result is x
+		'''.assertIllegal
+		
+		'''
+		result is let x = x * 2 in x end
+		'''.assertIllegal
+		
+		'''
+		result is let x = y * 2 in x end
+		'''.assertIllegal
+		
+		'''
+		def y = 1 with
+		result is let x = y + 2 in z end
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_incompleteLet() {
+		'''
+		result is let x in 5 end
+		'''.assertIllegal
+		
+		'''
+		result is let x = in 5 end
+		'''.assertIllegal
+		
+		'''
+		result is let x = 1 x end
+		'''.assertIllegal
+		
+		'''
+		result is let x = 1 in x
+		'''.assertIllegal
+		
+		'''
+		result is let x = 1 in end
+		'''.assertIllegal
+		
+		'''
+		result is let x = 1 end
+		'''.assertIllegal
+	}
+	
+	@Test
+	def void parse_variable() {
+		'''
+		def x = 2 with
+		result is x
+		'''.assertLegal
+	}
+	
+	@Test
+	def void parse_shadowing() {
+		'''
+		def x = 1 with
+		result is let x = x * 2 in x + 2 end
+		'''.assertLegal
+	}
+	
+	@Test
+	def void parse_correctMathExpression() {
+		'''
+		def x = 3 with
+		def y = x * (1 + 1) with
+		result is
+			let x = (2 + 1) * x - (1 - 1) in
+			let x = x + y in
+				(x - 2) * 2
+		end
 		'''.assertLegal
 	}
 }

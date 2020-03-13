@@ -105,9 +105,46 @@ class ExpressionEvaluationTest {
 	}
 	
 	@Test
-	def void evaluate_complex() {
+	def void evaluate_complexResult() {
 		'''
 		result is (1+3)*8/2-(2-3)-3-4+2*7
 		'''.assertValue(24)
+	}
+	
+	@Test
+	def void evaluate_variable() {
+		'''
+		def x = 2 with
+		result is x
+		'''.assertValue(2)
+	}
+	
+	@Test
+	def void evaluate_functionalExpression() {
+		'''
+		def x = 5 with
+		result is let y = x + 1 in y end
+		'''.assertValue(6)
+	}
+	
+	@Test
+	def void evaluate_shadowing() {
+		'''
+		def x = 5 with
+		result is let x = x + 1 in x end
+		'''.assertValue(6)
+	}
+	
+	@Test
+	def void evaluate_complexFunctionalExpression() {
+		'''
+		def x = 3 with
+		def y = x * (1 + 1) with
+		result is
+			let x = (2 + 1) * x - (1 - 1) in
+			let x = x + y in
+				(x - 2) * 2
+		end
+		'''.assertValue(26)
 	}
 }
