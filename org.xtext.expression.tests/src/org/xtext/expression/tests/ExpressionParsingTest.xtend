@@ -4,9 +4,11 @@
 package org.xtext.expression.tests
 
 import com.google.inject.Inject
+import org.eclipse.xtext.diagnostics.Severity
 import org.eclipse.xtext.testing.InjectWith
 import org.eclipse.xtext.testing.extensions.InjectionExtension
 import org.eclipse.xtext.testing.util.ParseHelper
+import org.eclipse.xtext.testing.validation.ValidationTestHelper
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
@@ -17,18 +19,30 @@ import org.xtext.expression.expression.MathExpression
 class ExpressionParsingTest {
 
 	@Inject extension ParseHelper<MathExpression>
+	@Inject extension ValidationTestHelper validation
 	
 	private def void assertLegal(CharSequence program) {
 		val result = program.parse
 		Assertions.assertNotNull(result)
 		
+		//Parse errors
 		val errors = result.eResource.errors
 		Assertions.assertTrue(errors.isEmpty, '''Unexpected errors: «errors.join(", ")»''')
+		
+		//Validation errors
+		result.assertNoErrors
 	}
 
 	private def void assertIllegal(CharSequence program) {
+		//Parse errors
 		val result = program.parse
-		Assertions.assertFalse(result !== null && result.eResource.errors.isEmpty, "Expected errors but found none")
+		Assertions.assertFalse(result !== null
+			&& result.eResource.errors.isEmpty
+			
+			//Validation errors
+			&& validation.validate(result).forall[severity != Severity.ERROR],
+			"Expected errors but found none"
+		)
 	}
 
 	@Test

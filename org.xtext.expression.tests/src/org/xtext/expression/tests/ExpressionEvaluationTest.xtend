@@ -18,7 +18,7 @@ class ExpressionEvaluationTest {
 	@Inject extension ExpressionGenerator
 	
 	private def void assertValue(CharSequence program, int value) {
-		Assertions.assertEquals(program.parse.compute, value)
+		Assertions.assertEquals(value, program.parse.compute)
 	}
 	
 	@Test
@@ -139,7 +139,7 @@ class ExpressionEvaluationTest {
 	def void parse_correctLetExpression() {
 		'''
 		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
-		'''.assertValue(29)
+		'''.assertValue(56)
 		
 		'''
 		def x = 8 with

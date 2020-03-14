@@ -3,6 +3,17 @@
  */
 package org.xtext.expression.scoping
 
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.EReference
+import org.eclipse.xtext.scoping.IScope
+import org.eclipse.xtext.scoping.Scopes
+import org.xtext.expression.expression.Expression
+import org.xtext.expression.expression.ExpressionPackage
+import org.xtext.expression.expression.Functional
+import org.xtext.expression.expression.MathExpression
+import org.xtext.expression.expression.Variable
+
+import static extension java.util.Collections.singleton
 
 /**
  * This class contains custom scoping description.
@@ -11,5 +22,28 @@ package org.xtext.expression.scoping
  * on how and when to use it.
  */
 class ExpressionScopeProvider extends AbstractExpressionScopeProvider {
-
+	
+	override getScope(EObject context, EReference reference) {
+		if (reference == ExpressionPackage.eINSTANCE.reference_Variable) {
+			return context.scope
+		}
+		return super.getScope(context, reference)
+	}
+	
+	def private IScope getScope(EObject context) {
+		val container = context.eContainer
+		
+		return switch (container) {
+			// Definitions from a MathExpression can be in scope
+			MathExpression: Scopes.scopeFor(
+				container.definitions.takeWhile[it != context].filter(Variable))
+			
+			// The parent Functional can provide variables, if the context is part of the Expression
+			Functional case context instanceof Expression: Scopes.scopeFor(
+				container.variable.singleton,
+				container.scope
+			)
+			default: container.scope
+		}
+	}
 }
