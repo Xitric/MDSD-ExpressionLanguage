@@ -1,59 +1,15 @@
-# BNF
-I did four iterations on the BNF to get from something easily understandable to something that actually adheres to associativity and precedence, and which solves recursion issues.
+# Xtext tiny math interpreter
+The interpreter has no left recursion, and implements correct associativity and operator precedence. It also supports functional-style expressions, hovering, scoping, and some validation. Lastly, it is backed by 41 unit tests.
 
-```c++
-// Problem: Left recursive
-Exp ::= Exp (Op Exp)? | Lit
-Op ::= '+' | '-' | '*' | '/'
-Lit ::= INT | '(' Exp ')'
-
-//Problem: Right associative
-Exp ::= Lit (Op Exp)?
-Op ::= '+' | '-' | '*' | '/'
-Lit ::= INT | '(' Exp ')'
-
-// Problem: Wrong operator precedence
-Exp ::= Lit (Op Lit)*
-Op ::= '+' | '-' | '*' | '/'
-Lit ::= INT | '(' Exp ')'
-
-// Problem: None
-Exp ::= MultDiv (PMOp MultDiv)*
-MultDiv ::= Lit (MDOp Lit)*
-Lit ::= '(' Exp ')' | INT
-PMOp ::= '+' | '-'
-MDOp ::= '*' | '/'
-```
-
-# In Xtext
-When implementing in Xtext I added the Atomic type to make Lit more focused. I also introduced the PlusMinus rule to be similar to MultDiv:
+The grammar allows expressions such as the one below, which evaluates to 26:
 
 ```
-Expression:
-	PlusMinus
-;
-
-PlusMinus returns Expression:
-	MultDiv ({PlusMinus.left=current} operator=PlusMinusOp right=MultDiv)*
-;
-
-MultDiv returns Expression:
-	Atomic ({MultDiv.left=current} operator=MultDivOp right=Atomic)*
-;
-
-Atomic returns Expression:
-	'(' Expression ')' | Lit
-;
-
-Lit:
-	value=INT
-;
-
-PlusMinusOp:
-	'+' | '-'
-;
-
-MultDivOp:
-	'*' | '/'
-;
+def x = 3 with
+def y = x * (1 + 1) with
+result is
+	let x = (2 + 1) * x - (1 - 1) in
+	let x = x + y in
+		(x - 2) * 2
+end
+end
 ```

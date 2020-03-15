@@ -50,7 +50,6 @@ class ExpressionGenerator extends AbstractGenerator {
 	}
 	
 	def dispatch int computeExp(Functional functional) {
-		//TODO: Scoping
 		functional.expression.computeExp
 	}
 	
@@ -67,14 +66,12 @@ class ExpressionGenerator extends AbstractGenerator {
 	}
 	
 	def int computeVar(Variable variable) {
-		//TODO: Scoping
 		variable.expression.computeExp
 	}
 	
 	//
 	// Display
 	//
-	//TODO: Scoping
 	def CharSequence display(MathExpression math) '''«math.definitions.map[displayDef].join(" ")» «math.expression.displayExp»'''
 	
 	def dispatch CharSequence displayExp(Binary binary) '''«binary.left.displayExp» «binary.operator.displayOp» «binary.right.displayExp»'''
