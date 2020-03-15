@@ -28,7 +28,7 @@ class ExpressionGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val math = resource.allContents.filter(MathExpression).next
-		System.out.println('''«math.display»=«math.compute»''')
+		System.out.println('''«math.display» = «math.compute»''')
 	}
 	
 	//
@@ -75,7 +75,7 @@ class ExpressionGenerator extends AbstractGenerator {
 	// Display
 	//
 	//TODO: Scoping
-	def CharSequence display(MathExpression math) '''«math.expression.displayExp»'''
+	def CharSequence display(MathExpression math) '''«math.definitions.map[displayDef].join(" ")» «math.expression.displayExp»'''
 	
 	def dispatch CharSequence displayExp(Binary binary) '''«binary.left.displayExp» «binary.operator.displayOp» «binary.right.displayExp»'''
 	def dispatch CharSequence displayExp(Parenthesis parenthesis) '''(«parenthesis.expression.displayExp»)'''
@@ -83,6 +83,7 @@ class ExpressionGenerator extends AbstractGenerator {
 	def dispatch CharSequence displayExp(Functional functional) '''let «functional.variable.displayVar» in «functional.expression.displayExp» end'''
 	def dispatch CharSequence displayExp(Reference reference) '''«reference.variable.name»'''
 	
+	def CharSequence displayDef(Variable variable) '''def «variable.displayVar» with'''
 	def CharSequence displayVar(Variable variable) '''«variable.name» = «variable.expression.displayExp»'''
 	
 	def dispatch CharSequence displayOp(Plus op) '''+'''

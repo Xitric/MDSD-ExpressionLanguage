@@ -3,6 +3,10 @@
  */
 package org.xtext.expression.validation
 
+import org.eclipse.xtext.validation.Check
+import org.xtext.expression.expression.MathExpression
+import org.xtext.expression.expression.Variable
+import org.xtext.expression.expression.ExpressionPackage
 
 /**
  * This class contains custom validation rules. 
@@ -11,15 +15,19 @@ package org.xtext.expression.validation
  */
 class ExpressionValidator extends AbstractExpressionValidator {
 	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					ExpressionPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
+	@Check
+	def checkDuplicateIdentifiers(Variable variable) {
+		val container = variable.eContainer
+		
+		// It is only possible to have duplicate identifiers among declarations
+		// in a MathExpression, since names shadow each other in Functionals
+		switch (container) {
+			MathExpression:
+			if (! container.definitions.takeWhile[it != variable].forall[name != variable.name]) {
+				error('''Duplicate identifier «variable.name»''', ExpressionPackage.eINSTANCE.variable_Name)
+				return
+			}
+		}
+	}
 	
 }
