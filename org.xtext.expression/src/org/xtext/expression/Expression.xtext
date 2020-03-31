@@ -2,9 +2,6 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 
 generate expression "http://www.xtext.org/expression/Expression"
 
-//TODO: Add power ** with right-associativity and highest precedence
-//TODO: Add floating point support for numbers!!!!
-
 MathExpression:
 	definitions += Definition*
 	'result' 'is' expression=Expression
@@ -27,27 +24,17 @@ Expression:
 // AddSub and MultDiv are only used as rules to ensure precedence, but they are
 // both represented as the common Binary type in the meta model
 AddSub returns Expression:
-	MultDiv ({Binary.left=current} operator=AddSubOp right=MultDiv)*
+	MultDiv ({Add.left=current} '+' right=MultDiv | {Sub.left=current} '-' right=MultDiv)*
 ;
 
 MultDiv returns Expression:
-	Functional ({Binary.left=current} operator=MultDivOp right=Functional)*
+	Functional ({Mult.left=current} '*' right=Functional | {Div.left=current} '/' right=Functional)*
 ;
 
 // By explicitly instantiating the Functional type, we ensure that 'variable'
 // and 'expression' are not placed in the Expression type of the meta model
 Functional returns Expression:
 	{Functional} 'let' variable=Variable 'in' expression=Expression 'end' | Primary
-;
-
-// We only use these two rules to group operators, but they are not actually
-// part of our meta model. The common Operator type is used in the Binary type
-AddSubOp returns Operator:
-	{Plus} '+' | {Minus} '-'
-;
-
-MultDivOp returns Operator:
-	{Mult} '*' | {Div} '/'
 ;
 
 Primary returns Expression:

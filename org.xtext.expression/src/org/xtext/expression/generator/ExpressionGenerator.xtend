@@ -7,16 +7,15 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
-import org.xtext.expression.expression.Binary
+import org.xtext.expression.expression.Add
 import org.xtext.expression.expression.Div
 import org.xtext.expression.expression.Functional
 import org.xtext.expression.expression.MathExpression
-import org.xtext.expression.expression.Minus
 import org.xtext.expression.expression.Mult
 import org.xtext.expression.expression.Number
 import org.xtext.expression.expression.Parenthesis
-import org.xtext.expression.expression.Plus
 import org.xtext.expression.expression.Reference
+import org.xtext.expression.expression.Sub
 import org.xtext.expression.expression.Variable
 
 /**
@@ -38,15 +37,20 @@ class ExpressionGenerator extends AbstractGenerator {
 		math.expression.computeExp
 	}
 	
-	def dispatch int computeExp(Binary binary) {
-		val left = binary.left.computeExp
-		switch binary.operator {
-			Plus: left + binary.right.computeExp
-			Minus: left - binary.right.computeExp
-			Mult: left * binary.right.computeExp
-			Div: left / binary.right.computeExp
-			default: throw new IllegalArgumentException('''Unexpected operator «binary.operator.class.name»''')
-		}
+	def dispatch int computeExp(Add add) {
+		return add.left.computeExp + add.right.computeExp
+	}
+	
+	def dispatch int computeExp(Sub sub) {
+		return sub.left.computeExp - sub.right.computeExp
+	}
+	
+	def dispatch int computeExp(Mult mult) {
+		return mult.left.computeExp * mult.right.computeExp
+	}
+	
+	def dispatch int computeExp(Div div) {
+		return div.left.computeExp / div.right.computeExp
 	}
 	
 	def dispatch int computeExp(Functional functional) {
@@ -74,17 +78,15 @@ class ExpressionGenerator extends AbstractGenerator {
 	//
 	def CharSequence display(MathExpression math) '''«math.definitions.map[displayDef].join(" ")» «math.expression.displayExp»'''
 	
-	def dispatch CharSequence displayExp(Binary binary) '''«binary.left.displayExp» «binary.operator.displayOp» «binary.right.displayExp»'''
+	def dispatch CharSequence displayExp(Add add) '''«add.left.displayExp» + «add.right.displayExp»'''
+	def dispatch CharSequence displayExp(Sub sub) '''«sub.left.displayExp» + «sub.right.displayExp»'''
+	def dispatch CharSequence displayExp(Mult mult) '''«mult.left.displayExp» + «mult.right.displayExp»'''
+	def dispatch CharSequence displayExp(Div div) '''«div.left.displayExp» + «div.right.displayExp»'''
 	def dispatch CharSequence displayExp(Parenthesis parenthesis) '''(«parenthesis.expression.displayExp»)'''
-	def dispatch CharSequence displayExp(Number num) '''«num.value»'''
+	def dispatch CharSequence displayExp(Number number) '''«number.value»'''
 	def dispatch CharSequence displayExp(Functional functional) '''let «functional.variable.displayVar» in «functional.expression.displayExp» end'''
 	def dispatch CharSequence displayExp(Reference reference) '''«reference.variable.name»'''
 	
 	def CharSequence displayDef(Variable variable) '''def «variable.displayVar» with'''
 	def CharSequence displayVar(Variable variable) '''«variable.name» = «variable.expression.displayExp»'''
-	
-	def dispatch CharSequence displayOp(Plus op) '''+'''
-	def dispatch CharSequence displayOp(Minus op) '''-'''
-	def dispatch CharSequence displayOp(Mult op) '''*'''
-	def dispatch CharSequence displayOp(Div op) '''/'''
 }

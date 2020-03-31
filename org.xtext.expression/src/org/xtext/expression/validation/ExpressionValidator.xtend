@@ -24,7 +24,7 @@ class ExpressionValidator extends AbstractExpressionValidator {
 		switch (container) {
 			MathExpression:
 			if (! container.definitions.takeWhile[it != variable].forall[name != variable.name]) {
-				error('''Duplicate identifier «variable.name»''', ExpressionPackage.eINSTANCE.variable_Name)
+				error('''Duplicate identifier ï¿½variable.nameï¿½''', ExpressionPackage.eINSTANCE.variable_Name)
 				return
 			}
 		}
