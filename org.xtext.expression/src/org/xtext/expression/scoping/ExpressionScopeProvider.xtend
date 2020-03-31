@@ -24,7 +24,7 @@ import static extension java.util.Collections.singleton
 class ExpressionScopeProvider extends AbstractExpressionScopeProvider {
 	
 	override getScope(EObject context, EReference reference) {
-		if (reference == ExpressionPackage.eINSTANCE.reference_Variable) {
+		if (reference == ExpressionPackage.Literals.REFERENCE__VARIABLE) {
 			return context.scope
 		}
 		return super.getScope(context, reference)

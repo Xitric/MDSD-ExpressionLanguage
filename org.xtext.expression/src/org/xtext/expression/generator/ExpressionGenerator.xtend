@@ -3,10 +3,30 @@
  */
 package org.xtext.expression.generator
 
+import com.google.inject.Inject
+import java.util.ArrayList
+import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
+import org.eclipse.xtext.scoping.IScopeProvider
+import org.xtext.expression.expression.Add
+import org.xtext.expression.expression.Calculation
+import org.xtext.expression.expression.Call
+import org.xtext.expression.expression.Div
+import org.xtext.expression.expression.ExpressionPackage
+import org.xtext.expression.expression.Functional
+import org.xtext.expression.expression.MathExpression
+import org.xtext.expression.expression.Mult
+import org.xtext.expression.expression.Number
+import org.xtext.expression.expression.Parenthesis
+import org.xtext.expression.expression.Reference
+import org.xtext.expression.expression.Sub
+import org.xtext.expression.expression.Variable
+
+import static extension org.eclipse.xtext.EcoreUtil2.*
 
 /**
  * Generates code from your model files on save.
@@ -15,7 +35,151 @@ import org.eclipse.xtext.generator.IGeneratorContext
  */
 class ExpressionGenerator extends AbstractGenerator {
 
+	@Inject
+	IScopeProvider scopeProvider
+
+	final List<String> functionalMethods = new ArrayList()
+	int nextFunctionalId = 0
+
+	private def reset() {
+		functionalMethods.clear()
+		nextFunctionalId = 0
+	}
+
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
-//		val math = resource.allContents.filter(MathExpression).next
+		reset()
+
+		val outputUri = fsa.getURI("")
+		val projectUri = outputUri.trimSegments(1)
+		val sourcesUri = projectUri.appendSegment("src")
+		val resourcePath = resource.normalizedURI.path
+
+		if (resourcePath.startsWith(sourcesUri.path)) {
+			val relativeOutputPath = resourcePath.substring(sourcesUri.path.length + 1).replace(".xit", ".java")
+			fsa.generateFile(relativeOutputPath, resource.generateClass)
+		}
+	}
+
+	private def CharSequence getName(Resource resource) {
+		resource.normalizedURI.lastSegment.replace(".xit", "")
+	}
+
+	//
+	// Structure
+	//
+	private def CharSequence generateClass(Resource resource) {
+		val mathExpression = resource.allContents.filter(MathExpression).next
+		'''
+			public class «resource.name» {
+				
+				«mathExpression.generateExternalsInterface»
+				
+				«resource.generateConstructor»
+				
+				«mathExpression.generateComputeMethod»
+				
+				«includeFunctionalMethods()»
+			}
+		'''
+	}
+
+	private def CharSequence generateExternalsInterface(MathExpression mathExpression) '''
+		public interface Externals {
+			«FOR external : mathExpression.externals»
+				int «external.name»(«FOR parameter : external.parameters SEPARATOR ", "»int «parameter»«ENDFOR»);
+			«ENDFOR»
+		}
+	'''
+
+	private def CharSequence generateConstructor(Resource resource) '''
+		private Externals externals;
+		
+		public «resource.name»(Externals externals) {
+			this.externals = externals;
+		}
+	'''
+
+	private def CharSequence generateComputeMethod(MathExpression mathExpression) '''
+		public void calculate() {
+			«FOR definition : mathExpression.definitions»«definition.generateVariable»«ENDFOR»
+			
+			«FOR calculation : mathExpression.calculations»«calculation.generateCalculation»«ENDFOR»
+		}
+	'''
+
+	private def CharSequence generateVariable(Variable variable) '''
+		int «variable.name» = «variable.expression.generateExpression»;
+	'''
+
+	private def CharSequence generateCalculation(Calculation calculation) '''
+		System.out.println("«calculation.name» " + («calculation.expression.generateExpression»));
+	'''
+
+	private def CharSequence includeFunctionalMethods() '''
+		«FOR functional : functionalMethods»
+			«functional»
+		«ENDFOR»
+	'''
+
+	//
+	// Expressions
+	//
+	private def dispatch CharSequence generateExpression(Add expression) {
+		'''«expression.left.generateExpression» + «expression.right.generateExpression»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Sub expression) {
+		'''«expression.left.generateExpression» - «expression.right.generateExpression»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Mult expression) {
+		'''«expression.left.generateExpression» * «expression.right.generateExpression»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Div expression) {
+		'''«expression.left.generateExpression» / «expression.right.generateExpression»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Parenthesis expression) {
+		'''(«expression.expression.generateExpression»)'''
+	}
+
+	private def dispatch CharSequence generateExpression(Number expression) {
+		'''«expression.value»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Functional expression) {
+		val scope = scopeProvider.getScope(expression, ExpressionPackage.Literals.REFERENCE__VARIABLE)
+		val variablesInScope = scope.allElements.map[description|description.EObjectOrProxy as Variable]
+		val id = nextFunctionalId++
+
+		expression.generateFunctionalMethod(id, variablesInScope)
+
+		'''func«id»(«FOR variable : variablesInScope SEPARATOR ", "»«variable.name»«ENDFOR»)'''
+	}
+
+	private def dispatch CharSequence generateExpression(Reference expression) {
+		'''«expression.variable.name»'''
+	}
+
+	private def dispatch CharSequence generateExpression(Call expression) {
+		'''this.externals.«expression.external.name»(«FOR argument : expression.arguments SEPARATOR ", "»«argument.generateExpression»«ENDFOR»)'''
+	}
+
+	private def generateFunctionalMethod(Functional functional, int id, Iterable<Variable> scope) {
+		functionalMethods.add('''
+			private int func«id»(«FOR parameter : scope SEPARATOR ", "»int «parameter.name»«ENDFOR») {
+				«IF functional.variable.hasNameCollision(scope)»
+				«functional.variable.generateVariable.toString.substring(4)»
+				«ELSE»
+				«functional.variable.generateVariable»
+				«ENDIF»
+				return «functional.expression.generateExpression»;
+			}
+		''')
+	}
+	
+	private def boolean hasNameCollision(Variable variable, Iterable<Variable> scope) {
+		return !scope.filter[it.name == variable.name].empty
 	}
 }
