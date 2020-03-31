@@ -3,8 +3,11 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 generate expression "http://www.xtext.org/expression/Expression"
 
 MathExpression:
-	definitions += Definition*
-	'result' 'is' expression=Expression
+	(definitions += Definition | calculations += Calculation)*
+;
+
+Calculation:
+	'result' name=STRING 'is' expression=Expression
 ;
 
 // A definition is basically just a variable with a bit extra syntax

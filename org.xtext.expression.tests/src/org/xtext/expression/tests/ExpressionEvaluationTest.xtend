@@ -8,23 +8,31 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.^extension.ExtendWith
 import org.xtext.expression.expression.MathExpression
-import org.xtext.expression.generator.ExpressionGenerator
+import org.xtext.expression.interpreter.ExpressionInterpreter
 
 @ExtendWith(InjectionExtension)
 @InjectWith(ExpressionInjectorProvider)
 class ExpressionEvaluationTest {
 	
 	@Inject extension ParseHelper<MathExpression>
-	@Inject extension ExpressionGenerator
+	@Inject extension ExpressionInterpreter
 	
 	private def void assertValue(CharSequence program, int value) {
-		Assertions.assertEquals(value, program.parse.compute)
+		val expression = program.parse;
+		
+		if (expression.calculations.size == 0) {
+			Assertions.fail("No calculations to evaluate")
+		} else if (expression.calculations.size > 1) {
+			Assertions.fail("Calculation is ambiguous")
+		} else {
+			Assertions.assertEquals(value, expression.calculations.get(0).compute)
+		}
 	}
 	
 	@Test
 	def void evaluate_lit() {
 		'''
-		result is 5
+		result "a" is 5
 		'''.assertValue(5)
 		
 	}
@@ -32,82 +40,82 @@ class ExpressionEvaluationTest {
 	@Test
 	def void evaluate_plus() {
 		'''
-		result is 3+5
+		result "b" is 3+5
 		'''.assertValue(8)
 	}
 	
 	@Test
 	def void evaluate_minus() {
 		'''
-		result is 8-6
+		result "c" is 8-6
 		'''.assertValue(2)
 	}
 	
 	@Test
 	def void evaluate_multiply() {
 		'''
-		result is 5*3
+		result "d" is 5*3
 		'''.assertValue(15)
 	}
 	
 	@Test
 	def void evaluate_divide() {
 		'''
-		result is 8/2
+		result "e" is 8/2
 		'''.assertValue(4)
 	}
 	
 	@Test
 	def void evaluate_multiplyPrecedence() {
 		'''
-		result is 2+3*5
+		result "f" is 2+3*5
 		'''.assertValue(17)
 		
 		'''
-		result is 3*5+2
+		result "g" is 3*5+2
 		'''.assertValue(17)
 	}
 	
 	@Test
 	def void evaluate_dividePrecedence() {
 		'''
-		result is 2+6/2
+		result "h" is 2+6/2
 		'''.assertValue(5)
 		
 		'''
-		result is 6/2+2
+		result "i" is 6/2+2
 		'''.assertValue(5)
 	}
 	
 	@Test
 	def void evaluate_associativity() {
 		'''
-		result is 2-3-5
+		result "j" is 2-3-5
 		'''.assertValue(-6)
 	}
 	
 	@Test
 	def void evaluate_parentheses() {
 		'''
-		result is (2+6)/2
+		result "k" is (2+6)/2
 		'''.assertValue(4)
 		
 		'''
-		result is (2+3)*5
+		result "l" is (2+3)*5
 		'''.assertValue(25)
 	}
 	
 	@Test
 	def void evaluate_onlyParentheses() {
 		'''
-		result is (5+6)
+		result "m" is (5+6)
 		'''.assertValue(11)
 	}
 	
 	@Test
 	def void evaluate_complexResult() {
 		'''
-		result is (1+3)*8/2-(2-3)-3-4+2*7
+		result "n" is (1+3)*8/2-(2-3)-3-4+2*7
 		'''.assertValue(24)
 	}
 	
@@ -115,7 +123,7 @@ class ExpressionEvaluationTest {
 	def void evaluate_variable() {
 		'''
 		def x = 2 with
-		result is x
+		result "o" is x
 		'''.assertValue(2)
 	}
 	
@@ -123,7 +131,7 @@ class ExpressionEvaluationTest {
 	def void evaluate_functionalExpression() {
 		'''
 		def x = 5 with
-		result is let y = x + 1 in y end
+		result "p" is let y = x + 1 in y end
 		'''.assertValue(6)
 	}
 	
@@ -131,20 +139,20 @@ class ExpressionEvaluationTest {
 	def void evaluate_shadowing() {
 		'''
 		def x = 5 with
-		result is let x = x + 1 in x end
+		result "q" is let x = x + 1 in x end
 		'''.assertValue(6)
 	}
 	
 	@Test
 	def void parse_correctLetExpression() {
 		'''
-		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
+		result "r" is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
 		'''.assertValue(56)
 		
 		'''
 		def x = 8 with
 		def y = (x * 6) / 5 - 3 + let z = x * 3 in z + 2 end with
-		result is y * x
+		result "s" is y * x
 		'''.assertValue(256)
 	}
 	
@@ -153,7 +161,7 @@ class ExpressionEvaluationTest {
 		'''
 		def x = 3 with
 		def y = x * (1 + 1) with
-		result is
+		result "t" is
 			let x = (2 + 1) * x - (1 - 1) in
 			let x = x + y in
 				(x - 2) * 2

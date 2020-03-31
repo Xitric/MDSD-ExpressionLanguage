@@ -112,21 +112,21 @@ class ExpressionParsingTest {
 	@Test
 	def void parse_onlyLit() {
 		'''
-		result is 4
+		result "a" is 4
 		'''.assertLegal
 	}
 	
 	@Test
 	def void parse_onlyParenthesis() {
 		'''
-		result is (5)
+		result "computation" is (5)
 		'''.assertLegal
 	}
 	
 	@Test
 	def void parse_correctResult() {
 		'''
-		result is 2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
+		result "b" is 2+3/(5*(4-2)/4+6)*(1/2)+9*12/(46-8)
 		'''.assertLegal
 	}
 	
@@ -232,7 +232,7 @@ class ExpressionParsingTest {
 	def void parse_variable() {
 		'''
 		def x = 2 with
-		result is x
+		result "c" is x
 		'''.assertLegal
 	}
 	
@@ -240,14 +240,14 @@ class ExpressionParsingTest {
 	def void parse_shadowing() {
 		'''
 		def x = 1 with
-		result is let x = x * 2 in x + 2 end
+		result "num" is let x = x * 2 in x + 2 end
 		'''.assertLegal
 	}
 	
 	@Test
 	def void parse_correctLetExpression() {
 		'''
-		result is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
+		result "hey" is 9 * let x = 2 in x * 3 end + 4 / let x = 1 in x + x end
 		'''.assertLegal
 	}
 	
@@ -263,7 +263,7 @@ class ExpressionParsingTest {
 		'''
 		def x = 3 with
 		def y = x * (1 + 1) with
-		result is
+		result "comp" is
 			let x = (2 + 1) * x - (1 - 1) in
 			let x = x + y in
 				(x - 2) * 2

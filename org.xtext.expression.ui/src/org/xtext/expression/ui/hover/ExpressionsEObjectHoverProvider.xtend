@@ -5,22 +5,22 @@ import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.ecore.util.Diagnostician
 import org.eclipse.xtext.ui.editor.hover.html.DefaultEObjectHoverProvider
 import org.xtext.expression.expression.Functional
-import org.xtext.expression.expression.MathExpression
 import org.xtext.expression.expression.Parenthesis
 import org.xtext.expression.expression.Reference
 import org.xtext.expression.expression.Variable
-import org.xtext.expression.generator.ExpressionGenerator
+import org.xtext.expression.interpreter.ExpressionInterpreter
 
 import static extension org.eclipse.emf.ecore.util.EcoreUtil.*
+import org.xtext.expression.expression.Calculation
 
 class ExpressionsEObjectHoverProvider extends DefaultEObjectHoverProvider {
 	
-	@Inject extension ExpressionGenerator
+	@Inject extension ExpressionInterpreter
 	
 	override getHoverInfoAsHtml(EObject obj) {
 		if (obj.ensureValid) {
 			switch (obj) {
-				MathExpression:
+				Calculation:
 					'''
 					<p>
 					«obj.display» = «obj.compute»

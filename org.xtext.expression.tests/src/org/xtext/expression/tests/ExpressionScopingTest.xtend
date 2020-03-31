@@ -36,8 +36,8 @@ class ExpressionScopingTest {
 	@Test
 	def void scope_empty() {
 		'''
-		result is 5
-		'''.parse.expression
+		result "a" is 5
+		'''.parse.calculations.get(0).expression
 			.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 			#[])
 	}
@@ -47,12 +47,12 @@ class ExpressionScopingTest {
 		'''
 		def x = 1 with
 		def y = 2 with
-		result is x
+		result "b" is x
 		'''.parse => [
 			definitions.last
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x"])
-			expression
+			calculations.get(0).expression
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x", "y"])
 		]
@@ -61,8 +61,8 @@ class ExpressionScopingTest {
 	@Test
 	def void scope_functional() {
 		'''
-		result is let x = 0 in x + 2 end
-		'''.parse.expression.eAllContents.filter(Reference).head
+		result "c" is let x = 0 in x + 2 end
+		'''.parse.calculations.get(0).expression.eAllContents.filter(Reference).head
 			.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 			#["x"])
 	}
@@ -72,8 +72,8 @@ class ExpressionScopingTest {
 		'''
 		def x = 1 with
 		def y = 2 with
-		result is 2 + let z = x + y in z * 6 end
-		'''.parse.expression.eAllContents.filter(Reference) => [
+		result "d" is 2 + let z = x + y in z * 6 end
+		'''.parse.calculations.get(0).expression.eAllContents.filter(Reference) => [
 			findFirst[variable.name == "x"]
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x", "y"])
@@ -88,15 +88,15 @@ class ExpressionScopingTest {
 		'''
 		def x = 1 with
 		def y = 2 with
-		result is 2 + let z = x + y in z * 6 end
+		result "e" is 2 + let z = x + y in z * 6 end
 		'''.parse => [
 			definitions.last
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x"])
-			expression.eAllContents.filter(Number).head
+			calculations.get(0).expression.eAllContents.filter(Number).head
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x", "y"])
-			expression.eAllContents.filter(Variable).head
+			calculations.get(0).expression.eAllContents.filter(Variable).head
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x", "y"])
 		]
@@ -105,8 +105,8 @@ class ExpressionScopingTest {
 	@Test
 	def void scope_local() {
 		'''
-		result is let x = 0 in x end + let y = 1 in y * 5 end * 5
-		'''.parse.expression.eAllContents => [
+		result "f" is let x = 0 in x end + let y = 1 in y * 5 end * 5
+		'''.parse.calculations.get(0).expression.eAllContents => [
 			filter(Reference).findFirst[variable.name == "x"]
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x"])
@@ -123,8 +123,8 @@ class ExpressionScopingTest {
 	def void scope_parentScope() {
 		'''
 		def x = 1 with
-		result is let y = x + 1 in let z = y * 2 in z / 3 end end
-		'''.parse.expression.eAllContents.filter(Reference) => [
+		result "g" is let y = x + 1 in let z = y * 2 in z / 3 end end
+		'''.parse.calculations.get(0).expression.eAllContents.filter(Reference) => [
 			findFirst[variable.name == "y"]
 				.assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 				#["x", "y"])
@@ -138,8 +138,8 @@ class ExpressionScopingTest {
 	def void scope_shadowing() {
 		'''
 		def x = 1 with
-		result is let x = x + 1 in let x = x * 2 in x / 3 end end
-		'''.parse.expression.eAllContents.filter(Reference).forEach [
+		result "h" is let x = x + 1 in let x = x * 2 in x / 3 end end
+		'''.parse.calculations.get(0).expression.eAllContents.filter(Reference).forEach [
 			assertScope(ExpressionPackage.eINSTANCE.reference_Variable,
 			#["x"])
 		]
