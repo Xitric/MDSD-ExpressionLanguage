@@ -7,7 +7,6 @@ import com.google.inject.Inject
 import java.util.ArrayList
 import java.util.List
 import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.xtend.lib.annotations.Data
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
 import org.eclipse.xtext.generator.IGeneratorContext
@@ -56,7 +55,16 @@ class ExpressionGenerator extends AbstractGenerator {
 
 		if (resourcePath.startsWith(sourcesUri.path)) {
 			val relativeOutputPath = resourcePath.substring(sourcesUri.path.length + 1).replace(".xit", ".java")
-			fsa.generateFile(relativeOutputPath, resource.generateClass)
+			fsa.generateFile(relativeOutputPath, resource.generateClass(relativeOutputPath))
+		}
+	}
+
+	private def CharSequence toPackage(String outputPath) {
+		val cutoff = outputPath.lastIndexOf('/')
+		if (cutoff == -1) {
+			""
+		} else {
+			outputPath.substring(0, cutoff).replace('/', '.')
 		}
 	}
 
@@ -67,10 +75,12 @@ class ExpressionGenerator extends AbstractGenerator {
 	//
 	// Structure
 	//
-	private def CharSequence generateClass(Resource resource) {
+	private def CharSequence generateClass(Resource resource, String dir) {
 		val mathExpression = resource.allContents.filter(MathExpression).next
 		'''
-			public class «resource.name» {
+			«IF dir.toPackage.length > 0»package «dir.toPackage»;
+			
+			«ENDIF»public class «resource.name» {
 				
 				«mathExpression.generateExternalsInterface»
 				

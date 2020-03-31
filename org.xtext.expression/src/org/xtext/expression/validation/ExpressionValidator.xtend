@@ -4,9 +4,10 @@
 package org.xtext.expression.validation
 
 import org.eclipse.xtext.validation.Check
+import org.xtext.expression.expression.Call
+import org.xtext.expression.expression.ExpressionPackage
 import org.xtext.expression.expression.MathExpression
 import org.xtext.expression.expression.Variable
-import org.xtext.expression.expression.ExpressionPackage
 
 /**
  * This class contains custom validation rules. 
@@ -30,4 +31,12 @@ class ExpressionValidator extends AbstractExpressionValidator {
 		}
 	}
 	
+	@Check
+	def checkCallArguments(Call call) {
+		val argumentCount = call.arguments.size
+		val parameterCount = call.external.parameters.size
+		if (argumentCount != parameterCount) {
+			error('''Expected «parameterCount» arguments, got «argumentCount»''', ExpressionPackage.Literals.CALL__ARGUMENTS)
+		}
+	}
 }
