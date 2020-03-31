@@ -62,9 +62,9 @@ class ExpressionInterpreter {
 	def CharSequence display(Calculation calc) '''«calc.name»: «calc.expression.displayExp»'''
 	
 	def dispatch CharSequence displayExp(Add add) '''«add.left.displayExp» + «add.right.displayExp»'''
-	def dispatch CharSequence displayExp(Sub sub) '''«sub.left.displayExp» + «sub.right.displayExp»'''
-	def dispatch CharSequence displayExp(Mult mult) '''«mult.left.displayExp» + «mult.right.displayExp»'''
-	def dispatch CharSequence displayExp(Div div) '''«div.left.displayExp» + «div.right.displayExp»'''
+	def dispatch CharSequence displayExp(Sub sub) '''«sub.left.displayExp» - «sub.right.displayExp»'''
+	def dispatch CharSequence displayExp(Mult mult) '''«mult.left.displayExp» * «mult.right.displayExp»'''
+	def dispatch CharSequence displayExp(Div div) '''«div.left.displayExp» / «div.right.displayExp»'''
 	def dispatch CharSequence displayExp(Parenthesis parenthesis) '''(«parenthesis.expression.displayExp»)'''
 	def dispatch CharSequence displayExp(Number number) '''«number.value»'''
 	def dispatch CharSequence displayExp(Functional functional) '''let «functional.variable.displayVar» in «functional.expression.displayExp» end'''
