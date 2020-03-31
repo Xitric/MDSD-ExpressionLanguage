@@ -2,6 +2,7 @@ package org.xtext.expression.interpreter
 
 import org.xtext.expression.expression.Add
 import org.xtext.expression.expression.Calculation
+import org.xtext.expression.expression.Call
 import org.xtext.expression.expression.Div
 import org.xtext.expression.expression.Functional
 import org.xtext.expression.expression.Mult
@@ -52,6 +53,10 @@ class ExpressionInterpreter {
 		reference.variable.computeVar
 	}
 	
+	def dispatch int computeExp(Call call) {
+		throw new UnsupportedOperationException("Cannot compute value of external function")
+	}
+	
 	def int computeVar(Variable variable) {
 		variable.expression.computeExp
 	}
@@ -69,6 +74,7 @@ class ExpressionInterpreter {
 	def dispatch CharSequence displayExp(Number number) '''«number.value»'''
 	def dispatch CharSequence displayExp(Functional functional) '''let «functional.variable.displayVar» in «functional.expression.displayExp» end'''
 	def dispatch CharSequence displayExp(Reference reference) '''«reference.variable.name»'''
+	def dispatch CharSequence displayExp(Call call) '''«call.external.name»(«FOR arg : call.arguments SEPARATOR ', '»«arg.displayExp»«ENDFOR»)'''
 	
 	def CharSequence displayDef(Variable variable) '''def «variable.displayVar» with'''
 	def CharSequence displayVar(Variable variable) '''«variable.name» = «variable.expression.displayExp»'''

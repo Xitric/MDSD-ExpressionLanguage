@@ -3,11 +3,15 @@ grammar org.xtext.expression.Expression with org.eclipse.xtext.common.Terminals
 generate expression "http://www.xtext.org/expression/Expression"
 
 MathExpression:
-	(definitions += Definition | calculations += Calculation)*
+	(definitions += Definition | externals += External | calculations += Calculation)*
 ;
 
 Calculation:
 	'result' name=STRING 'is' expression=Expression
+;
+
+External:
+	'external' name=ID '(' parameters += ID? (',' parameters += ID)* ')'
 ;
 
 // A definition is basically just a variable with a bit extra syntax
@@ -41,7 +45,7 @@ Functional returns Expression:
 ;
 
 Primary returns Expression:
-	Parenthesis | Reference | Number
+	Parenthesis | Reference | Call | Number
 ;
 
 // This type is necessary because otherwise we do not know where to print
@@ -53,6 +57,10 @@ Parenthesis:
 
 Reference:
 	variable=[Variable]
+;
+
+Call:
+	external=[External] '(' arguments += Expression? (',' arguments += Expression)* ')'
 ;
 
 Number:
